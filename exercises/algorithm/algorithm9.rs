@@ -2,28 +2,28 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
-
 use std::cmp::Ord;
 use std::default::Default;
 
 pub struct Heap<T>
-where
-    T: Default,
+    where
+        T: Default,
 {
+    ix: usize,
     count: usize,
     items: Vec<T>,
     comparator: fn(&T, &T) -> bool,
 }
 
 impl<T> Heap<T>
-where
-    T: Default,
+    where
+        T: Default,
 {
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
+            ix: 0,
             count: 0,
-            items: vec![T::default()],
+            items: vec![],
             comparator,
         }
     }
@@ -37,7 +37,21 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.count += 1;
+        self.items.push(value);
+        
+        if (self.comparator)(&self.items[self.count - 1], &self.items[self.ix]) {
+            self.ix = 0;
+        }
+
+        let mut node = self.count - 1;
+        while node > 0 {
+            let parent = (node - 1) / 2;
+            if (self.comparator)(&self.items[node], &self.items[parent]) {
+                self.items.swap(node, parent);
+            }
+            node = parent;
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,13 +72,13 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+        0
     }
 }
 
 impl<T> Heap<T>
-where
-    T: Default + Ord,
+    where
+        T: Default + Ord,
 {
     /// Create a new MinHeap
     pub fn new_min() -> Self {
@@ -78,14 +92,18 @@ where
 }
 
 impl<T> Iterator for Heap<T>
-where
-    T: Default,
+    where
+        T: Default + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.ix >= self.count {
+            None
+        } else {
+            self.ix += 1;
+            Some(self.items[self.ix - 1].clone())
+        }
     }
 }
 
@@ -94,8 +112,8 @@ pub struct MinHeap;
 impl MinHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
-    where
-        T: Default + Ord,
+        where
+            T: Default + Ord,
     {
         Heap::new(|a, b| a < b)
     }
@@ -106,8 +124,8 @@ pub struct MaxHeap;
 impl MaxHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
-    where
-        T: Default + Ord,
+        where
+            T: Default + Ord,
     {
         Heap::new(|a, b| a > b)
     }
@@ -116,6 +134,7 @@ impl MaxHeap {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn test_empty_heap() {
         let mut heap = MaxHeap::new::<i32>();
